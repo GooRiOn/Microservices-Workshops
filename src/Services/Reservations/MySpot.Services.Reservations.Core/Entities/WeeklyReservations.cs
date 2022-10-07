@@ -26,7 +26,7 @@ public class WeeklyReservations : AggregateRoot
         IncrementVersion();
     }
 
-    internal void AddReservation(Reservation reservation, Date now)
+    public void AddReservation(Reservation reservation, Date now)
     {
         if (reservation.Date <= now ||  reservation.Date < Week.From || reservation.Date > Week.To)
         {
