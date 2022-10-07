@@ -1,4 +1,4 @@
-using MySpot.Services.Reservations.Core.Events;
+using MySpot.Services.Reservations.Core.Exception;
 using MySpot.Services.Reservations.Core.Types;
 using MySpot.Services.Reservations.Core.ValueObjects;
 
@@ -6,33 +6,98 @@ namespace MySpot.Services.Reservations.Core.Entities;
 
 public class WeeklyReservations : AggregateRoot
 {
+    private readonly JobTitle _jobTitle = JobTitle.None;
     private readonly HashSet<Reservation> _reservations = new();
-    
-    public JobTitle JobTitle { get; private set; }
-    public UserId UserId { get; }
-    public Week Week { get; }
-    
-    public IEnumerable<Reservation> Reservations { get; }
 
+    public UserId UserId { get; private set; } = null!;
+    public Week Week { get; private set; } = null!;
+    public IEnumerable<Reservation> Reservations => _reservations;
+    
+    private WeeklyReservations()
+    {
+    }
+    
     public WeeklyReservations(AggregateId id, User user, Week week)
     {
         Id = id;
         UserId = user.Id;
-        JobTitle = user.JobTitle;
         Week = week;
+        _jobTitle = user.JobTitle;
+        IncrementVersion();
     }
 
-    public void AddReservation(Reservation reservation, Date now)
+    internal void AddReservation(Reservation reservation, Date now)
     {
-        // LOGIC
-        _reservations.Add(reservation);
-        AddEvent(new ReservationAdded(this, reservation));
-    }
-
-    public void ChangeReservationLicencePlate(ReservationId reservationId, LicensePlate licensePlate)
-    {
-        var reservation = _reservations.SingleOrDefault(x => x.Id == reservationId);
-        reservation.ChangeLicensePlate(licensePlate);
+        if (reservation.Date <= now ||  reservation.Date < Week.From || reservation.Date > Week.To)
+        {
+            throw new InvalidReservationDateException(reservation.Date.Value);
+        }
         
+        if (_reservations.Any(x => x.Date == reservation.Date))
+        {
+            throw new ParkingSpotAlreadyReservedException(reservation.ParkingSpotId, reservation.Date);
+        }
+
+        _reservations.Add(reservation);
+        IncrementVersion();
+    }
+
+    public Reservation RemoveReservation(ReservationId reservationId)
+    {
+        var reservation = GetReservation(reservationId);
+        _reservations.Remove(reservation);
+        IncrementVersion();
+
+        return reservation;
+    }
+
+    public void RemoveReservations(IEnumerable<Reservation> reservations)
+    {
+        _reservations.RemoveWhere(r => reservations.Any(rr => rr.Id == r.Id));
+        IncrementVersion();
+    }
+    
+    public void ChangeReservationsNote(ReservationId reservationId, string note)
+    {
+        var reservation = GetReservation(reservationId);
+        reservation.ChangeNote(note);
+        IncrementVersion();
+    }
+
+    public void ChangeLicensePlate(ReservationId reservationId, LicensePlate licensePlate)
+    {
+        var reservation = GetReservation(reservationId);
+        reservation.ChangeLicensePlate(licensePlate);
+        IncrementVersion();
+    }
+    
+    public void MarkReservationAsVerified(ReservationId reservationId)
+    {
+        var reservation = GetReservation(reservationId);
+        reservation.MarkAsVerified();
+        IncrementVersion();
+    }
+    
+    public void MarkReservationAsIncorrect(ReservationId reservationId)
+    {
+        var reservation = GetReservation(reservationId);
+        reservation.MarkAsIncorrect();
+        IncrementVersion();
+    }
+
+    private Reservation GetReservation(ReservationId reservationId)
+    {
+        var reservation = _reservations.FirstOrDefault(r => r.Id == reservationId);
+
+        if (reservation is null)
+        {
+            throw new ReservationNotFoundException(reservationId);
+        }
+        if (reservation.Date < Date.Now)
+        {
+            throw new CannotModifyPastReservationException(reservation.Date);
+        }
+
+        return reservation;
     }
 }
