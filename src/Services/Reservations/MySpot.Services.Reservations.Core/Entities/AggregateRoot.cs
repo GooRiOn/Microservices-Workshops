@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using MySpot.Services.Reservations.Core.Events;
 
 namespace MySpot.Services.Reservations.Core.Entities;
