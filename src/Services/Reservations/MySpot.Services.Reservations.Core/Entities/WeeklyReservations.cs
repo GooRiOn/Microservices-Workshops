@@ -39,7 +39,17 @@ public class WeeklyReservations : AggregateRoot
             throw new ParkingSpotAlreadyReservedException(reservation.ParkingSpotId, reservation.Date);
         }
         
-        // POLICIES USAGE HERE
+        var policy = policies.SingleOrDefault(p => p.CanBeApplied(_jobTitle));
+        if (policy is null)
+        {
+            throw new NoReservationPolicyFoundException(_jobTitle);
+        }
+
+        if (!policy.CanReserve(_reservations))
+        {
+            throw new CannotMakeReservationException(reservation.ParkingSpotId);
+        }
+
 
         _reservations.Add(reservation);
         IncrementVersion();
