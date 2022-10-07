@@ -37,6 +37,8 @@ public class WeeklyReservations : AggregateRoot
         {
             throw new ParkingSpotAlreadyReservedException(reservation.ParkingSpotId, reservation.Date);
         }
+        
+        //
 
         _reservations.Add(reservation);
         IncrementVersion();
