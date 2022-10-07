@@ -1,4 +1,5 @@
 using MySpot.Services.Reservations.Core.Exception;
+using MySpot.Services.Reservations.Core.Policies;
 using MySpot.Services.Reservations.Core.Types;
 using MySpot.Services.Reservations.Core.ValueObjects;
 
@@ -26,7 +27,7 @@ public class WeeklyReservations : AggregateRoot
         IncrementVersion();
     }
 
-    public void AddReservation(Reservation reservation, Date now)
+    public void AddReservation(Reservation reservation, IEnumerable<IReservationPolicy> policies, Date now)
     {
         if (reservation.Date <= now ||  reservation.Date < Week.From || reservation.Date > Week.To)
         {
@@ -38,7 +39,7 @@ public class WeeklyReservations : AggregateRoot
             throw new ParkingSpotAlreadyReservedException(reservation.ParkingSpotId, reservation.Date);
         }
         
-        //
+        // POLICIES USAGE HERE
 
         _reservations.Add(reservation);
         IncrementVersion();
