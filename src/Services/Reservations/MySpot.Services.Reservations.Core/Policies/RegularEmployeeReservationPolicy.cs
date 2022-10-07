@@ -17,6 +17,6 @@ public sealed class RegularEmployeeReservationPolicy : IReservationPolicy
     public bool CanReserve(IEnumerable<Reservation> reservations)
     {
         var totalEmployeeReservations = reservations.Count();
-        return totalEmployeeReservations <= 4 && _clock.Current().Hour > 4;
+        return totalEmployeeReservations <= 3 && _clock.Current().Hour >= 10;
     }
 }

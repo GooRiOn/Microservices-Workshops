@@ -27,7 +27,7 @@ public class WeeklyReservations : AggregateRoot
         IncrementVersion();
     }
 
-    public void AddReservation(Reservation reservation, IEnumerable<IReservationPolicy> policies, Date now)
+    internal void AddReservation(Reservation reservation, IEnumerable<IReservationPolicy> policies, Date now)
     {
         if (reservation.Date <= now ||  reservation.Date < Week.From || reservation.Date > Week.To)
         {
@@ -49,8 +49,7 @@ public class WeeklyReservations : AggregateRoot
         {
             throw new CannotMakeReservationException(reservation.ParkingSpotId);
         }
-
-
+        
         _reservations.Add(reservation);
         IncrementVersion();
     }
