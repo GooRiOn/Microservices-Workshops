@@ -1,6 +1,6 @@
 using Micro.Exceptions;
 
-namespace MySpot.Services.Reservations.Core.Exceptions;
+namespace MySpot.Services.Reservations.Core.Exception;
 
 public class InvalidAggregateIdException : CustomException
 {

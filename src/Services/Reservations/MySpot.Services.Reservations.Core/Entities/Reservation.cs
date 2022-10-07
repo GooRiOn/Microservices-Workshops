@@ -1,44 +1,43 @@
-using MySpot.Services.Reservations.Core.Exceptions;
-using MySpot.Services.Reservations.Core.ValueObject;
+using MySpot.Services.Reservations.Core.Types;
+using MySpot.Services.Reservations.Core.ValueObjects;
 
 namespace MySpot.Services.Reservations.Core.Entities;
 
 public class Reservation
 {
-    public Guid Id { get; private set; }
-    public Guid ParkingSpotId { get; private set; }
-    public int Capacity { get; private set; }
-    public LicencePlate LicencePlate { get; private set; }
-    public DateTimeOffset Date { get; private set; }
+    public ReservationId Id { get; private set; }
+    public ParkingSpotId ParkingSpotId { get; private set; }
+    public Capacity Capacity { get; private set;}
+    public LicensePlate LicensePlate { get; private set; }
+    public Date Date { get; private set; }
     public string Note { get; private set; }
-    public string State { get; private set; }
+    public ReservationState State { get; private set; }
 
-    public Reservation(Guid id, Guid parkingSpotId, int capacity, string licencePlate,
-        DateTimeOffset date, string state, string note = null)
+    private Reservation()
+    {
+    }
+    
+    internal Reservation(ReservationId id, ParkingSpotId parkingSpotId, Capacity capacity, 
+        LicensePlate licensePlate, Date date, string note  = null)
     {
         Id = id;
         ParkingSpotId = parkingSpotId;
         Capacity = capacity;
-        LicencePlate = licencePlate;
+        LicensePlate = licensePlate;
         Date = date;
-        State = state;
         Note = note;
+        State = ReservationState.Unverified;
     }
 
-    public void ChangeLicencePlate(LicencePlate licencePlate)
-        => LicencePlate = licencePlate;
+    internal void ChangeNote(string note)
+        => Note = note;
+    
+    internal void ChangeLicensePlate(LicensePlate licensePlate)
+        => LicensePlate = licensePlate;
 
-    public void MarkAsValid()
-    {
-        if (State is "INVALID")
-        {
-            
-        }
-        State = "VALID";
-    }
-
-    public void MarkAsInvalid()
-    {
-        
-    }
+    internal void MarkAsVerified()
+        => State = ReservationState.Verified;
+    
+    internal void MarkAsIncorrect()
+        => State = ReservationState.Incorrect;
 }

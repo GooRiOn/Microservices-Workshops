@@ -1,4 +1,4 @@
-using MySpot.Services.Reservations.Core.Exceptions;
+using MySpot.Services.Reservations.Core.Exception;
 
 namespace MySpot.Services.Reservations.Core.Types;
 
